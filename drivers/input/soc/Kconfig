@@ -1,0 +1,21 @@
+#
+# Joystick driver configuration
+#
+menuconfig INPUT_SOC
+	bool "SOC adc driver"
+
+if INPUT_SOC
+
+config SOC_ADC 
+	tristate "soc adc driver support "
+	depends on I2C2_RK29 || I2C2_RK30
+
+config ADC_JS
+	tristate "adc js driver support "
+	depends on I2C2_RK29 || I2C2_RK30
+
+
+config USB_ADC_JS
+        tristate "usb adc js driver support "
+
+endif
