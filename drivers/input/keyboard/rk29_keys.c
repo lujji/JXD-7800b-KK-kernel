@@ -30,7 +30,7 @@
 #define EMPTY_ADVALUE					950
 #define DRIFT_ADVALUE					70
 #define INVALID_ADVALUE 				-1
-#define EV_MENU					KEY_F1
+
 
 
 #if 0
@@ -80,7 +80,9 @@ static ssize_t rk29key_set(struct device *dev,
                 {
                         .keyArrary = {"esc"},
                 },
-
+                {
+                        .keyArrary = {"sensor"},
+                },
                 {
                         .keyArrary = {"play"},
                 },
@@ -90,19 +92,10 @@ static ssize_t rk29key_set(struct device *dev,
                 {
                         .keyArrary = {"vol-"},
                 },
-                {
-                        .keyArrary = {"select"},
-                },
-                {
-                        .keyArrary = {"start"},
-                },
-                {
-                        .keyArrary = {"sensor"},
-                },               
         }; 
 	char *p;
 	  
-	for(i=0;i<9;i++)
+	for(i=0;i<7;i++)
 	{
 		
 		p = strstr(buf,Arrary[i].keyArrary);
@@ -113,7 +106,7 @@ static ssize_t rk29key_set(struct device *dev,
               }
 		start = strcspn(p,":");
 		
-		if(i<8)
+		if(i<6)
 			end = strcspn(p,",");
 		else
 			end = strcspn(p,"}");
@@ -122,28 +115,25 @@ static ssize_t rk29key_set(struct device *dev,
 		
 		strncpy(rk29keyArrary,p+start+1,end-start-1);
 							 		
-		for(j=0;j<9;j++)
+		for(j=0;j<7;j++)
 		{		
 			if(strcmp(pdata->buttons[j].desc,Arrary[i].keyArrary)==0)
 			{
 				if(strcmp(rk29keyArrary,"MENU")==0)
-					pdata->buttons[j].code = EV_MENU;
+//					pdata->buttons[j].code = EV_MENU;
+					pdata->buttons[j].code = KEY_MENU;
 				else if(strcmp(rk29keyArrary,"HOME")==0)
 					pdata->buttons[j].code = KEY_HOME;
 				else if(strcmp(rk29keyArrary,"ESC")==0)
 					pdata->buttons[j].code = KEY_BACK;
+				else if(strcmp(rk29keyArrary,"sensor")==0)
+					pdata->buttons[j].code = KEY_CAMERA;
 				else if(strcmp(rk29keyArrary,"PLAY")==0)
 					pdata->buttons[j].code = KEY_POWER;
 				else if(strcmp(rk29keyArrary,"VOLUP")==0)
 					pdata->buttons[j].code = KEY_VOLUMEUP;
 				else if(strcmp(rk29keyArrary,"VOLDOWN")==0)
 					pdata->buttons[j].code = KEY_VOLUMEDOWN;
-				else if(strcmp(rk29keyArrary,"select")==0)
-					pdata->buttons[j].code = BTN_SELECT;
-				else if(strcmp(rk29keyArrary,"START")==0)
-					pdata->buttons[j].code = BTN_START;
-				else if(strcmp(rk29keyArrary,"sensor")==0)
-					pdata->buttons[j].code = KEY_CAMERA;
 				else
 				     continue;
 		 	}
@@ -152,7 +142,7 @@ static ssize_t rk29key_set(struct device *dev,
 			
    	}
 
-	for(i=0;i<9;i++)
+	for(i=0;i<7;i++)
 		dev_dbg(dev, "desc=%s, code=%d\n",pdata->buttons[i].desc,pdata->buttons[i].code);
 	return 0; 
 
@@ -236,7 +226,6 @@ static void keys_long_press_timer(unsigned long _data)
 	}
 	bdata->state = state;
 }
-int select, start;
 static void keys_timer(unsigned long _data)
 {
 	int state;
@@ -251,23 +240,12 @@ static void keys_timer(unsigned long _data)
 		state = !!button->adc_state;
 	if(bdata->state != state) {
 		bdata->state = state;
-		key_dbg(bdata, "%skey[%s]: report ev[%d] state[%d]\n", 
+//		key_dbg(bdata, "%skey[%s]: report ev[%d] state[%d]\n", 
+//			(button->gpio == INVALID_GPIO)?"ad":"io", button->desc, button->code, bdata->state);
+		printk(KERN_NOTICE "%skey[%s]: report ev[%d] state[%d]\n", 
 			(button->gpio == INVALID_GPIO)?"ad":"io", button->desc, button->code, bdata->state);
-		//TODO
-		if (button->code == BTN_SELECT) {
-			if (bdata->state)
-				select = 1;
-			else
-				select = 0;
-		} else if (button->code == BTN_START) {
-			if (bdata->state)
-				start = 1;
-			else
-				start = 0;
-		} else {
-			input_event(input, type, button->code, bdata->state);
-			input_sync(input);
-		}
+		input_event(input, type, button->code, bdata->state);
+		input_sync(input);
 	}
 	if(state)
 		mod_timer(&bdata->timer,
@@ -391,6 +369,8 @@ static int __devinit keys_probe(struct platform_device *pdev)
 
 		if (button->wakeup)
 			wakeup = 1;
+
+
 
 		input_set_capability(input, EV_KEY, button->code);
 	};

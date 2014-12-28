@@ -2687,26 +2687,33 @@ static struct rk29_keys_button key_button[] = {
                 .active_low = PRESS_LEV_LOW,
         },
         {
-                .desc   = "select",
-                .code   = BTN_SELECT,
-                .adc_value      = 655,
-		.gpio = INVALID_GPIO,
-		.active_low = PRESS_LEV_LOW,
-	},
-        {
-                .desc   = "START",
-                .code   = BTN_START,
-                .adc_value      = 365,
-                .gpio = INVALID_GPIO,
-                .active_low = PRESS_LEV_LOW,
-        },
-        {
                 .desc   = "play",
                 .code   = KEY_POWER,
                 .gpio   = RK30_PIN0_PA4,
                 .active_low = PRESS_LEV_LOW,
                 .wakeup = 1,
         },
+		{
+                .desc   = "menu",
+                .code   = EV_MENU,
+				.adc_value		= 343,
+                .gpio = INVALID_GPIO,
+                .active_low = PRESS_LEV_LOW,
+        },
+        {
+                .desc   = "home",
+                .code   = KEY_HOME,
+				.adc_value		= 741,
+                .gpio = INVALID_GPIO,
+                .active_low = PRESS_LEV_LOW,
+        },
+        {
+                .desc   = "esc",
+                .code   = KEY_BACK,
+				.adc_value		= 570,
+				.gpio = INVALID_GPIO,
+				.active_low = PRESS_LEV_LOW,
+		},        
 };
 struct rk29_keys_platform_data rk29_keys_pdata = {
 	.buttons	= key_button,

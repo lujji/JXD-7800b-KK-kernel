@@ -54,3 +54,4 @@ obj-$(CONFIG_KEYBOARD_TWL4030)		+= twl4030_keypad.o
 obj-$(CONFIG_KEYBOARD_XTKBD)		+= xtkbd.o
 obj-$(CONFIG_KEYBOARD_W90P910)		+= w90p910_keypad.o
 obj-$(CONFIG_SYNAPTICS_SO340010)        += synaptics_so340010.o
+obj-y	+= keys-rk3188-mid.o
