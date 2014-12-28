@@ -1,6 +1,17 @@
-RK_g7_KK
-========
+# JXD-7800B-KK-kernel
 
-An attempt to port 7800b kernel to KK
+An attempt to port 7800b kernel to KitKat
 
-run 7800b_defconfig to build
+Known issues:
+  - auto-rotation inverted
+  - hardware buttons not working
+  - ...
+
+### Installation
+
+```sh
+$ make 7800b_defconfig
+```
+
+### Version
+3.0.36

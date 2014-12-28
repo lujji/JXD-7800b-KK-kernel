@@ -336,7 +336,7 @@ static int rk29_backlight_pwm_resume(void)
 
 static struct rk29_bl_info rk29_bl_info = {
 	.pwm_id = PWM_ID,
-	.min_brightness=80,
+	.min_brightness=10,
 	.max_brightness=255,
 	.brightness_mode =BRIGHTNESS_MODE_CONIC,
 	.pre_div = 30 * 1000,  // pwm output clk: 30k;
@@ -1787,15 +1787,6 @@ static struct i2c_board_info __initdata i2c0_info[] = {
 		.platform_data = &lis3dh_info,
 	},
 #endif
-#if defined (CONFIG_TOUCHSCREEN_FT5406)
-	{		
-		.type	="ft5x0x_ts",		
-		.addr	= 0x38,    //0x70,		
-		.flags		=0,		
-		.irq		=RK30_PIN1_PB7, // support goodix tp detect, 20110706		
-		.platform_data = &ft5406_info,	
-	},
-#endif	
 #if defined (CONFIG_COMPASS_AK8975)
 	{
 		.type          = "ak8975",
@@ -2598,6 +2589,15 @@ static struct i2c_board_info __initdata i2c2_info[] = {
 	.addr			= 0x46,
 	.flags			= 0,
 },
+#endif
+#if defined (CONFIG_TOUCHSCREEN_FT5406)
+	{		
+		.type	="ft5x0x_ts",		
+		.addr	= 0x38,    //0x70,		
+		.flags		=0,		
+		.irq		=RK30_PIN1_PB7, // support goodix tp detect, 20110706		
+		.platform_data = &ft5406_info,	
+	},
 #endif
 };
 #endif
