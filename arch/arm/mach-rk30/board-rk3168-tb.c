@@ -506,9 +506,11 @@ static struct sensor_platform_data mma8452_info = {
         .init_platform_hw = mma8452_init_platform_hw,
     #if defined (CONFIG_ANDROID_KITKAT)       
     //.orientation = {0, 1, 0, -1, 0, 0, 0, 0, 1},
-    .orientation = {1, 0, 0, 0, 1, 0, 0, 0, 1},
+    //.orientation = {1, 0, 0, 0, 1, 0, 0, 0, 1},
+    .orientation = {-1, 0, 0, 0, -1, 0, 0, 0, 1},
  	#else
  	.orientation = {-1, 0, 0, 0, -1, 0, 0, 0, 1},
+ 	//.orientation = {0, -1, 0, 1, 0, 0, 0, 0, 1},
  	#endif
 };
 #endif
