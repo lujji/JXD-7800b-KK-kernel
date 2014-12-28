@@ -134,6 +134,78 @@ struct platform_device rk_device_headset = {
 };
 #endif
 
+#if defined (CONFIG_TOUCHSCREEN_FT5406)
+#define TOUCH_RESET_PIN RK30_PIN0_PB6
+#define TOUCH_INT_PIN	RK30_PIN1_PB7
+#define TOUCH_POWER_PIN INVALID_GPIO//RK29_PIN6_PD3
+int ft5406_init_platform_hw(void)
+{
+	struct regulator *ldo;
+	ldo =regulator_get(NULL, "act_ldo5");
+	regulator_disable(ldo);
+	if(gpio_request(TOUCH_RESET_PIN,NULL) != 0){
+	  gpio_free(TOUCH_RESET_PIN);
+	  printk("ft5406_init_platform_hw gpio_request error\n");
+	  return -EIO;
+	}
+
+	if(gpio_request(TOUCH_INT_PIN,NULL) != 0){
+	  gpio_free(TOUCH_INT_PIN);
+	  printk("ift5406_init_platform_hw gpio_request error\n");
+	  return -EIO;
+	}
+	gpio_set_value(TOUCH_RESET_PIN,GPIO_LOW);
+	mdelay(5);	
+	regulator_enable(ldo);
+	regulator_put(ldo);
+	mdelay(5);
+	gpio_set_value(TOUCH_RESET_PIN,GPIO_HIGH);
+	mdelay(200);
+	return 0;
+}
+
+void ft5406_exit_platform_hw(void)
+{
+	printk("ft5406_exit_platform_hw\n");
+	struct regulator *ldo;
+	ldo =regulator_get(NULL, "act_ldo5");
+	gpio_set_value(TOUCH_RESET_PIN,GPIO_LOW);
+	mdelay(5);
+	regulator_disable(ldo);
+	regulator_put(ldo);
+
+	gpio_free(TOUCH_RESET_PIN);
+	gpio_free(TOUCH_INT_PIN);
+
+}
+
+int ft5406_platform_sleep(void)
+{
+	printk("ft5406_platform_sleep\n");
+	//gpio_set_value(TOUCH_RESET_PIN,GPIO_LOW);
+	return 0;
+}
+
+int ft5406_platform_wakeup(void)
+{
+	printk("ft5406_platform_wakeup\n");
+	gpio_set_value(TOUCH_RESET_PIN,GPIO_LOW);
+	msleep(5);
+	gpio_set_value(TOUCH_RESET_PIN,GPIO_HIGH);
+	msleep(200);
+	return 0;
+}
+
+struct ft5406_platform_data ft5406_info = {
+
+  .init_platform_hw= ft5406_init_platform_hw,
+  .exit_platform_hw= ft5406_exit_platform_hw,
+  .platform_sleep  = ft5406_platform_sleep,
+  .platform_wakeup = ft5406_platform_wakeup,
+
+};
+#endif
+
 #if defined(CONFIG_TOUCHSCREEN_GT8XX)
 #define TOUCH_RESET_PIN  RK30_PIN0_PB6
 #define TOUCH_PWR_PIN    RK30_PIN0_PC5   // need to fly line by hardware engineer
@@ -1715,6 +1787,15 @@ static struct i2c_board_info __initdata i2c0_info[] = {
 		.platform_data = &lis3dh_info,
 	},
 #endif
+#if defined (CONFIG_TOUCHSCREEN_FT5406)
+	{		
+		.type	="ft5x0x_ts",		
+		.addr	= 0x38,    //0x70,		
+		.flags		=0,		
+		.irq		=RK30_PIN1_PB7, // support goodix tp detect, 20110706		
+		.platform_data = &ft5406_info,	
+	},
+#endif	
 #if defined (CONFIG_COMPASS_AK8975)
 	{
 		.type          = "ak8975",

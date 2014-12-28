@@ -1,6 +1,6 @@
 RK_g7_KK
 ========
 
-G7 kitkat kernel
+An attempt to port 7800b kernel to KK
 
-run g7KK_defconfig to build
+run 7800b_defconfig to build
