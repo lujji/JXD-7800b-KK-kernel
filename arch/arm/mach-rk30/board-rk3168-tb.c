@@ -2697,7 +2697,7 @@ static struct rk29_keys_button key_button[] = {
         },
 		{
                 .desc   = "menu",
-                .code   = EV_MENU,
+                .code   = KEY_MENU,
 				.adc_value		= 343,
                 .gpio = INVALID_GPIO,
                 .active_low = PRESS_LEV_LOW,
