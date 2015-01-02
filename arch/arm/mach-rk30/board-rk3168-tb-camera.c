@@ -33,10 +33,15 @@ Comprehensive camera device registration:
                              mclk)\           // sensor input clock rate, 24 or 48
                           
 */
+
 static struct rkcamera_platform_data new_camera[] = { 
   new_camera_device_ex(RK29_CAM_SENSOR_GC2035,
             back,
-            180,
+#if defined (CONFIG_ANDROID_KITKAT)
+              180,
+#else
+              270,
+#endif
             INVALID_VALUE,
             INVALID_VALUE,
             INVALID_VALUE,
@@ -52,7 +57,11 @@ static struct rkcamera_platform_data new_camera[] = {
             24),
   new_camera_device_ex(RK29_CAM_SENSOR_GC0308,
             front,
-            180,
+#if defined (CONFIG_ANDROID_KITKAT)
+              180,
+#else
+              90,
+#endif
             INVALID_VALUE,
             INVALID_VALUE,
             INVALID_VALUE,

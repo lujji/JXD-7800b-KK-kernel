@@ -1,17 +1,12 @@
 # JXD-7800B-KK-kernel
 
-An attempt to port 7800b kernel to KitKat
-
-Known issues:
-  - auto-rotation inverted
-  - hardware buttons not working
-  - ...
+S7800b kernel ported to KitKat
 
 ### Installation
 
 ```sh
-$ make 7800b_defconfig
+$ make 7800b_KK_defconfig
 ```
 
 ### Version
-3.0.36
+3.0.36+
