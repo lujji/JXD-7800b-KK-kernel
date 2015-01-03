@@ -114,11 +114,6 @@ void rtw_btcoex_SpecialPacketNotify(PADAPTER padapter, u8 pktType)
 	hal_btcoex_SpecialPacketNotify(padapter, pktType);
 }
 
-void rtw_btcoex_IQKNotify(PADAPTER padapter, u8 state)
-{
-	hal_btcoex_IQKNotify(padapter, state);
-}
-
 void rtw_btcoex_BtInfoNotify(PADAPTER padapter, u8 length, u8 *tmpBuf)
 {
 	hal_btcoex_BtInfoNotify(padapter, length, tmpBuf);
@@ -240,9 +235,9 @@ void rtw_btcoex_SetChipType(PADAPTER padapter, u8 chipType)
 	hal_btcoex_SetChipType(padapter, chipType);
 }
 
-void rtw_btcoex_SetPGAntNum(PADAPTER padapter, u8 antNum, u8 antInverse)
+void rtw_btcoex_SetPGAntNum(PADAPTER padapter, u8 antNum)
 {
-	hal_btcoex_SetPgAntNum(padapter, antNum, antInverse);
+	hal_btcoex_SetPgAntNum(padapter, antNum);
 }
 
 u8 rtw_btcoex_GetPGAntNum(PADAPTER padapter)

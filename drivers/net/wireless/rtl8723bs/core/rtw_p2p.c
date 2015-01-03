@@ -532,7 +532,6 @@ u32 build_beacon_p2p_ie(struct wifidirect_info *pwdinfo, u8 *pbuf)
 u32 build_beacon_wfd_ie(struct wifidirect_info *pwdinfo, u8 *pbuf)
 {
 	u8 wfdie[ MAX_WFD_IE_LEN] = { 0x00 };
-	u16 val16=0;
 	u32 len=0, wfdielen = 0;
 	_adapter *padapter = pwdinfo->padapter;
 	struct mlme_priv		*pmlmepriv = &padapter->mlmepriv;
@@ -569,22 +568,19 @@ u32 build_beacon_wfd_ie(struct wifidirect_info *pwdinfo, u8 *pbuf)
 		if ( is_any_client_associated( pwdinfo->padapter ) )
 		{
 			//	WFD primary sink + WiFi Direct mode + WSD (WFD Service Discovery)
-			val16 = pwfd_info->wfd_device_type | WFD_DEVINFO_WSD;
-			RTW_PUT_BE16(wfdie + wfdielen, val16);			
+			RTW_PUT_BE16(wfdie + wfdielen, pwfd_info->wfd_device_type | WFD_DEVINFO_WSD );			
 		}
 		else
 		{
 			//	WFD primary sink + available for WFD session + WiFi Direct mode + WSD (WFD Service Discovery)
-			val16 = pwfd_info->wfd_device_type | WFD_DEVINFO_SESSION_AVAIL | WFD_DEVINFO_WSD;
-			RTW_PUT_BE16(wfdie + wfdielen, val16);
+			RTW_PUT_BE16(wfdie + wfdielen, pwfd_info->wfd_device_type | WFD_DEVINFO_SESSION_AVAIL | WFD_DEVINFO_WSD );
 		}
 
 	}
 	else
 	{
 		//	WFD primary sink + available for WFD session + WiFi Direct mode + WSD ( WFD Service Discovery )
-		val16 = pwfd_info->wfd_device_type | WFD_DEVINFO_SESSION_AVAIL | WFD_DEVINFO_WSD;
-		RTW_PUT_BE16(wfdie + wfdielen, val16);
+		RTW_PUT_BE16(wfdie + wfdielen, pwfd_info->wfd_device_type | WFD_DEVINFO_SESSION_AVAIL | WFD_DEVINFO_WSD );
 	}
 	
 	wfdielen += 2;
@@ -644,7 +640,7 @@ u32 build_beacon_wfd_ie(struct wifidirect_info *pwdinfo, u8 *pbuf)
 	wfdie[ wfdielen++ ] = 0;
 	wfdie[ wfdielen++ ] = 0;
 
-	rtw_set_ie(pbuf, _VENDOR_SPECIFIC_IE_, wfdielen, (unsigned char *) wfdie, &len);
+	pbuf = rtw_set_ie(pbuf, _VENDOR_SPECIFIC_IE_, wfdielen, (unsigned char *) wfdie, &len);
 
 	return len;
 	
@@ -653,7 +649,6 @@ u32 build_beacon_wfd_ie(struct wifidirect_info *pwdinfo, u8 *pbuf)
 u32 build_probe_req_wfd_ie(struct wifidirect_info *pwdinfo, u8 *pbuf)
 {
 	u8 wfdie[ MAX_WFD_IE_LEN] = { 0x00 };
-	u16 val16=0;
 	u32 len=0, wfdielen = 0;
 	_adapter *padapter = pwdinfo->padapter;
 	struct mlme_priv		*pmlmepriv = &padapter->mlmepriv;
@@ -688,19 +683,17 @@ u32 build_probe_req_wfd_ie(struct wifidirect_info *pwdinfo, u8 *pbuf)
 	if ( 1 == pwdinfo->wfd_tdls_enable )
 	{
 		//	WFD primary sink + available for WFD session + WiFi TDLS mode + WSC ( WFD Service Discovery )	
-		val16 = pwfd_info->wfd_device_type | 
+		RTW_PUT_BE16(wfdie + wfdielen, pwfd_info->wfd_device_type | 
 						WFD_DEVINFO_SESSION_AVAIL | 
 						WFD_DEVINFO_WSD |
-						WFD_DEVINFO_PC_TDLS;
-		RTW_PUT_BE16(wfdie + wfdielen, val16 );
+						WFD_DEVINFO_PC_TDLS );
 	}
 	else
 	{
 		//	WFD primary sink + available for WFD session + WiFi Direct mode + WSC ( WFD Service Discovery )	
-		val16 = pwfd_info->wfd_device_type |
+		RTW_PUT_BE16(wfdie + wfdielen, pwfd_info->wfd_device_type |
 						WFD_DEVINFO_SESSION_AVAIL | 
-						WFD_DEVINFO_WSD;
-		RTW_PUT_BE16(wfdie + wfdielen, val16 );
+						WFD_DEVINFO_WSD );
 	}
 
 	wfdielen += 2;
@@ -760,7 +753,7 @@ u32 build_probe_req_wfd_ie(struct wifidirect_info *pwdinfo, u8 *pbuf)
 	wfdie[ wfdielen++ ] = 0;
 	wfdie[ wfdielen++ ] = 0;
 
-	rtw_set_ie(pbuf, _VENDOR_SPECIFIC_IE_, wfdielen, (unsigned char *) wfdie, &len);
+	pbuf = rtw_set_ie(pbuf, _VENDOR_SPECIFIC_IE_, wfdielen, (unsigned char *) wfdie, &len);
 
 	return len;
 	
@@ -964,7 +957,6 @@ u32 build_probe_resp_wfd_ie(struct wifidirect_info *pwdinfo, u8 *pbuf, u8 tunnel
 u32 build_assoc_req_wfd_ie(struct wifidirect_info *pwdinfo, u8 *pbuf)
 {
 	u8 wfdie[ MAX_WFD_IE_LEN] = { 0x00 };
-	u16 val16=0;
 	u32 len=0, wfdielen = 0;
 	_adapter 					*padapter = NULL;
 	struct mlme_priv			*pmlmepriv = NULL;
@@ -1005,8 +997,7 @@ u32 build_assoc_req_wfd_ie(struct wifidirect_info *pwdinfo, u8 *pbuf)
 	//	Value1:
 	//	WFD device information
 	//	WFD primary sink + available for WFD session + WiFi Direct mode + WSD ( WFD Service Discovery )
-	val16 = pwfd_info->wfd_device_type | WFD_DEVINFO_SESSION_AVAIL | WFD_DEVINFO_WSD;
-	RTW_PUT_BE16(wfdie + wfdielen, val16);
+	RTW_PUT_BE16(wfdie + wfdielen, pwfd_info->wfd_device_type | WFD_DEVINFO_SESSION_AVAIL | WFD_DEVINFO_WSD );
 	wfdielen += 2;
 
 	//	Value2:
@@ -1064,7 +1055,7 @@ u32 build_assoc_req_wfd_ie(struct wifidirect_info *pwdinfo, u8 *pbuf)
 	wfdie[ wfdielen++ ] = 0;
 	wfdie[ wfdielen++ ] = 0;
 
-	rtw_set_ie(pbuf, _VENDOR_SPECIFIC_IE_, wfdielen, (unsigned char *) wfdie, &len);
+	pbuf = rtw_set_ie(pbuf, _VENDOR_SPECIFIC_IE_, wfdielen, (unsigned char *) wfdie, &len);
 
 	return len;
 	
@@ -1074,7 +1065,6 @@ u32 build_assoc_resp_wfd_ie(struct wifidirect_info *pwdinfo, u8 *pbuf)
 {
 	u8 wfdie[ MAX_WFD_IE_LEN] = { 0x00 };
 	u32 len=0, wfdielen = 0;
-	u16 val16=0;
 	_adapter *padapter = pwdinfo->padapter;
 	struct mlme_priv		*pmlmepriv = &padapter->mlmepriv;
 	struct wifi_display_info*	pwfd_info = padapter->wdinfo.wfd_info;
@@ -1105,8 +1095,7 @@ u32 build_assoc_resp_wfd_ie(struct wifidirect_info *pwdinfo, u8 *pbuf)
 	//	Value1:
 	//	WFD device information
 	//	WFD primary sink + available for WFD session + WiFi Direct mode + WSD ( WFD Service Discovery )
-	val16 = pwfd_info->wfd_device_type | WFD_DEVINFO_SESSION_AVAIL | WFD_DEVINFO_WSD;
-	RTW_PUT_BE16(wfdie + wfdielen, val16);
+	RTW_PUT_BE16(wfdie + wfdielen, pwfd_info->wfd_device_type | WFD_DEVINFO_SESSION_AVAIL | WFD_DEVINFO_WSD );
 	wfdielen += 2;
 
 	//	Value2:
@@ -1164,7 +1153,7 @@ u32 build_assoc_resp_wfd_ie(struct wifidirect_info *pwdinfo, u8 *pbuf)
 	wfdie[ wfdielen++ ] = 0;
 	wfdie[ wfdielen++ ] = 0;
 
-	rtw_set_ie(pbuf, _VENDOR_SPECIFIC_IE_, wfdielen, (unsigned char *) wfdie, &len);
+	pbuf = rtw_set_ie(pbuf, _VENDOR_SPECIFIC_IE_, wfdielen, (unsigned char *) wfdie, &len);
 
 	return len;
 	
@@ -1174,7 +1163,6 @@ u32 build_nego_req_wfd_ie(struct wifidirect_info *pwdinfo, u8 *pbuf)
 {
 	u8 wfdie[ MAX_WFD_IE_LEN] = { 0x00 };
 	u32 len=0, wfdielen = 0;
-	u16 val16=0;
 	_adapter *padapter = pwdinfo->padapter;
 	struct mlme_priv		*pmlmepriv = &padapter->mlmepriv;
 	struct wifi_display_info*	pwfd_info = padapter->wdinfo.wfd_info;
@@ -1205,8 +1193,7 @@ u32 build_nego_req_wfd_ie(struct wifidirect_info *pwdinfo, u8 *pbuf)
 	//	Value1:
 	//	WFD device information
 	//	WFD primary sink + WiFi Direct mode + WSD ( WFD Service Discovery ) + WFD Session Available
-	val16 = pwfd_info->wfd_device_type | WFD_DEVINFO_WSD | WFD_DEVINFO_SESSION_AVAIL;
-	RTW_PUT_BE16(wfdie + wfdielen, val16);
+	RTW_PUT_BE16(wfdie + wfdielen, pwfd_info->wfd_device_type | WFD_DEVINFO_WSD | WFD_DEVINFO_SESSION_AVAIL);
 	wfdielen += 2;
 
 	//	Value2:
@@ -1264,7 +1251,7 @@ u32 build_nego_req_wfd_ie(struct wifidirect_info *pwdinfo, u8 *pbuf)
 	wfdie[ wfdielen++ ] = 0;
 	wfdie[ wfdielen++ ] = 0;
 
-	rtw_set_ie(pbuf, _VENDOR_SPECIFIC_IE_, wfdielen, (unsigned char *) wfdie, &len);
+	pbuf = rtw_set_ie(pbuf, _VENDOR_SPECIFIC_IE_, wfdielen, (unsigned char *) wfdie, &len);
 
 	return len;
 	
@@ -1274,7 +1261,6 @@ u32 build_nego_resp_wfd_ie(struct wifidirect_info *pwdinfo, u8 *pbuf)
 {
 	u8 wfdie[ MAX_WFD_IE_LEN] = { 0x00 };
 	u32 len=0, wfdielen = 0;
-	u16 val16=0;
 	_adapter *padapter = pwdinfo->padapter;
 	struct mlme_priv		*pmlmepriv = &padapter->mlmepriv;
 	struct wifi_display_info*	pwfd_info = padapter->wdinfo.wfd_info;
@@ -1305,8 +1291,7 @@ u32 build_nego_resp_wfd_ie(struct wifidirect_info *pwdinfo, u8 *pbuf)
 	//	Value1:
 	//	WFD device information
 	//	WFD primary sink + WiFi Direct mode + WSD ( WFD Service Discovery ) + WFD Session Available
-	val16 = pwfd_info->wfd_device_type | WFD_DEVINFO_WSD | WFD_DEVINFO_SESSION_AVAIL;
-	RTW_PUT_BE16(wfdie + wfdielen, val16);
+	RTW_PUT_BE16(wfdie + wfdielen, pwfd_info->wfd_device_type | WFD_DEVINFO_WSD | WFD_DEVINFO_SESSION_AVAIL);
 	wfdielen += 2;
 
 	//	Value2:
@@ -1365,7 +1350,7 @@ u32 build_nego_resp_wfd_ie(struct wifidirect_info *pwdinfo, u8 *pbuf)
 	wfdie[ wfdielen++ ] = 0;
 
 
-	rtw_set_ie(pbuf, _VENDOR_SPECIFIC_IE_, wfdielen, (unsigned char *) wfdie, &len);
+	pbuf = rtw_set_ie(pbuf, _VENDOR_SPECIFIC_IE_, wfdielen, (unsigned char *) wfdie, &len);
 
 	return len;
 	
@@ -1375,7 +1360,6 @@ u32 build_nego_confirm_wfd_ie(struct wifidirect_info *pwdinfo, u8 *pbuf)
 {
 	u8 wfdie[ MAX_WFD_IE_LEN] = { 0x00 };
 	u32 len=0, wfdielen = 0;
-	u16 val16=0;
 	_adapter *padapter = pwdinfo->padapter;
 	struct mlme_priv		*pmlmepriv = &padapter->mlmepriv;
 	struct wifi_display_info*	pwfd_info = padapter->wdinfo.wfd_info;
@@ -1406,8 +1390,7 @@ u32 build_nego_confirm_wfd_ie(struct wifidirect_info *pwdinfo, u8 *pbuf)
 	//	Value1:
 	//	WFD device information
 	//	WFD primary sink + WiFi Direct mode + WSD ( WFD Service Discovery ) + WFD Session Available
-	val16 = pwfd_info->wfd_device_type | WFD_DEVINFO_WSD | WFD_DEVINFO_SESSION_AVAIL;
-	RTW_PUT_BE16(wfdie + wfdielen, val16);
+	RTW_PUT_BE16(wfdie + wfdielen, pwfd_info->wfd_device_type | WFD_DEVINFO_WSD | WFD_DEVINFO_SESSION_AVAIL);
 	wfdielen += 2;
 
 	//	Value2:
@@ -1476,7 +1459,6 @@ u32 build_invitation_req_wfd_ie(struct wifidirect_info *pwdinfo, u8 *pbuf)
 {
 	u8 wfdie[ MAX_WFD_IE_LEN] = { 0x00 };
 	u32 len=0, wfdielen = 0;
-	u16 val16=0;
 	_adapter *padapter = pwdinfo->padapter;
 	struct mlme_priv		*pmlmepriv = &padapter->mlmepriv;
 	struct wifi_display_info*	pwfd_info = padapter->wdinfo.wfd_info;
@@ -1507,8 +1489,7 @@ u32 build_invitation_req_wfd_ie(struct wifidirect_info *pwdinfo, u8 *pbuf)
 	//	Value1:
 	//	WFD device information
 	//	WFD primary sink + available for WFD session + WiFi Direct mode + WSD ( WFD Service Discovery )
-	val16 = pwfd_info->wfd_device_type | WFD_DEVINFO_SESSION_AVAIL | WFD_DEVINFO_WSD;
-	RTW_PUT_BE16(wfdie + wfdielen, val16);
+	RTW_PUT_BE16(wfdie + wfdielen, pwfd_info->wfd_device_type | WFD_DEVINFO_SESSION_AVAIL | WFD_DEVINFO_WSD );
 	wfdielen += 2;
 
 	//	Value2:
@@ -1581,7 +1562,7 @@ u32 build_invitation_req_wfd_ie(struct wifidirect_info *pwdinfo, u8 *pbuf)
 
 	}
 
-	rtw_set_ie(pbuf, _VENDOR_SPECIFIC_IE_, wfdielen, (unsigned char *) wfdie, &len);
+	pbuf = rtw_set_ie(pbuf, _VENDOR_SPECIFIC_IE_, wfdielen, (unsigned char *) wfdie, &len);
 
 	return len;
 	
@@ -1590,7 +1571,6 @@ u32 build_invitation_req_wfd_ie(struct wifidirect_info *pwdinfo, u8 *pbuf)
 u32 build_invitation_resp_wfd_ie(struct wifidirect_info *pwdinfo, u8 *pbuf)
 {
 	u8 wfdie[ MAX_WFD_IE_LEN] = { 0x00 };
-	u16 val16=0;
 	u32 len=0, wfdielen = 0;
 	_adapter *padapter = pwdinfo->padapter;
 	struct mlme_priv		*pmlmepriv = &padapter->mlmepriv;
@@ -1622,8 +1602,7 @@ u32 build_invitation_resp_wfd_ie(struct wifidirect_info *pwdinfo, u8 *pbuf)
 	//	Value1:
 	//	WFD device information
 	//	WFD primary sink + available for WFD session + WiFi Direct mode + WSD ( WFD Service Discovery )
-	val16 = pwfd_info->wfd_device_type | WFD_DEVINFO_SESSION_AVAIL | WFD_DEVINFO_WSD;
-	RTW_PUT_BE16(wfdie + wfdielen, val16);
+	RTW_PUT_BE16(wfdie + wfdielen, pwfd_info->wfd_device_type | WFD_DEVINFO_SESSION_AVAIL | WFD_DEVINFO_WSD );
 	wfdielen += 2;
 
 	//	Value2:
@@ -1696,7 +1675,7 @@ u32 build_invitation_resp_wfd_ie(struct wifidirect_info *pwdinfo, u8 *pbuf)
 
 	}
 
-	rtw_set_ie(pbuf, _VENDOR_SPECIFIC_IE_, wfdielen, (unsigned char *) wfdie, &len);
+	pbuf = rtw_set_ie(pbuf, _VENDOR_SPECIFIC_IE_, wfdielen, (unsigned char *) wfdie, &len);
 
 	return len;
 	
@@ -1706,7 +1685,6 @@ u32 build_provdisc_req_wfd_ie(struct wifidirect_info *pwdinfo, u8 *pbuf)
 {
 	u8 wfdie[ MAX_WFD_IE_LEN] = { 0x00 };
 	u32 len=0, wfdielen = 0;
-	u16 val16=0;
 	_adapter *padapter = pwdinfo->padapter;
 	struct mlme_priv		*pmlmepriv = &padapter->mlmepriv;
 	struct wifi_display_info*	pwfd_info = padapter->wdinfo.wfd_info;
@@ -1737,8 +1715,7 @@ u32 build_provdisc_req_wfd_ie(struct wifidirect_info *pwdinfo, u8 *pbuf)
 	//	Value1:
 	//	WFD device information
 	//	WFD primary sink + available for WFD session + WiFi Direct mode + WSD ( WFD Service Discovery )
-	val16 = pwfd_info->wfd_device_type | WFD_DEVINFO_SESSION_AVAIL | WFD_DEVINFO_WSD;
-	RTW_PUT_BE16(wfdie + wfdielen, val16);
+	RTW_PUT_BE16(wfdie + wfdielen, pwfd_info->wfd_device_type | WFD_DEVINFO_SESSION_AVAIL | WFD_DEVINFO_WSD );
 	wfdielen += 2;
 
 	//	Value2:
@@ -1797,7 +1774,7 @@ u32 build_provdisc_req_wfd_ie(struct wifidirect_info *pwdinfo, u8 *pbuf)
 	wfdie[ wfdielen++ ] = 0;
 
 
-	rtw_set_ie(pbuf, _VENDOR_SPECIFIC_IE_, wfdielen, (unsigned char *) wfdie, &len);
+	pbuf = rtw_set_ie(pbuf, _VENDOR_SPECIFIC_IE_, wfdielen, (unsigned char *) wfdie, &len);
 
 	return len;
 	
@@ -1807,7 +1784,6 @@ u32 build_provdisc_resp_wfd_ie(struct wifidirect_info *pwdinfo, u8 *pbuf)
 {
 	u8 wfdie[ MAX_WFD_IE_LEN] = { 0x00 };
 	u32 len=0, wfdielen = 0;
-	u16 val16=0;
 	_adapter *padapter = pwdinfo->padapter;
 	struct mlme_priv		*pmlmepriv = &padapter->mlmepriv;
 	struct wifi_display_info*	pwfd_info = padapter->wdinfo.wfd_info;
@@ -1838,8 +1814,7 @@ u32 build_provdisc_resp_wfd_ie(struct wifidirect_info *pwdinfo, u8 *pbuf)
 	//	Value1:
 	//	WFD device information
 	//	WFD primary sink + available for WFD session + WiFi Direct mode + WSD ( WFD Service Discovery )
-	val16 = pwfd_info->wfd_device_type | WFD_DEVINFO_SESSION_AVAIL | WFD_DEVINFO_WSD;
-	RTW_PUT_BE16(wfdie + wfdielen, val16);
+	RTW_PUT_BE16(wfdie + wfdielen, pwfd_info->wfd_device_type | WFD_DEVINFO_SESSION_AVAIL | WFD_DEVINFO_WSD );
 	wfdielen += 2;
 
 	//	Value2:
@@ -1897,7 +1872,7 @@ u32 build_provdisc_resp_wfd_ie(struct wifidirect_info *pwdinfo, u8 *pbuf)
 	wfdie[ wfdielen++ ] = 0;
 	wfdie[ wfdielen++ ] = 0;
 
-	rtw_set_ie(pbuf, _VENDOR_SPECIFIC_IE_, wfdielen, (unsigned char *) wfdie, &len);
+	pbuf = rtw_set_ie(pbuf, _VENDOR_SPECIFIC_IE_, wfdielen, (unsigned char *) wfdie, &len);
 
 	return len;
 	
@@ -3582,7 +3557,7 @@ _func_enter_;
 
 	if (rtw_get_ch_setting_union(padapter, &ch, &bw, &offset) != 0) {
 		if (0)
-		DBG_871X(FUNC_ADPT_FMT" back to linked/linking union - ch:%u, bw:%u, offset:%u\n",
+		DBG_871X(FUNC_ADPT_FMT" back to linked union - ch:%u, bw:%u, offset:%u\n",
 			FUNC_ADPT_ARG(padapter), ch, bw, offset);
 	}
 	else if (adapter_wdev_data(padapter)->p2p_enabled && pwdinfo->listen_channel) {
@@ -4081,7 +4056,7 @@ int rtw_p2p_check_frames(_adapter *padapter, const u8 *buf, u32 len, u8 tx)
 
 						//pwdev_priv->provdisc_req_issued = _FALSE;
 
-						#if defined(CONFIG_CONCURRENT_MODE) && defined(CONFIG_CFG80211_ONECHANNEL_UNDER_CONCURRENT)
+						#ifdef CONFIG_CONCURRENT_MODE
 						if(check_buddy_fwstate(padapter, _FW_LINKED))
 							rtw_cfg80211_adjust_p2pie_channel(padapter, frame_body, len-sizeof(struct rtw_ieee80211_hdr_3addr));
 						#endif
@@ -4110,7 +4085,7 @@ int rtw_p2p_check_frames(_adapter *padapter, const u8 *buf, u32 len, u8 tx)
 							(tx==_TRUE)?"Tx":"Rx", dialogToken, (intent>>1), intent&0x1 ? "+" : "-", listen_ch, op_ch, ch_list_buf);
 
 					if (!tx) {
-						#if defined(CONFIG_CONCURRENT_MODE) && defined(CONFIG_CFG80211_ONECHANNEL_UNDER_CONCURRENT)
+						#ifdef CONFIG_CONCURRENT_MODE
 						if(check_buddy_fwstate(padapter, _FW_LINKED)
 							&& rtw_chk_p2pie_ch_list_with_buddy(padapter, frame_body, len-sizeof(struct rtw_ieee80211_hdr_3addr)) == _FALSE)
 						{
@@ -4127,7 +4102,7 @@ int rtw_p2p_check_frames(_adapter *padapter, const u8 *buf, u32 len, u8 tx)
 					struct rtw_wdev_nego_info* nego_info = &pwdev_priv->nego_info;
 
 					if (tx) {
-						#if defined(CONFIG_CONCURRENT_MODE) && defined(CONFIG_CFG80211_ONECHANNEL_UNDER_CONCURRENT)
+						#ifdef CONFIG_CONCURRENT_MODE
 						if(check_buddy_fwstate(padapter, _FW_LINKED))
 							rtw_cfg80211_adjust_p2pie_channel(padapter, frame_body, len-sizeof(struct rtw_ieee80211_hdr_3addr));
 						#endif
@@ -4157,7 +4132,7 @@ int rtw_p2p_check_frames(_adapter *padapter, const u8 *buf, u32 len, u8 tx)
 
 					if (!tx) {
 						pwdev_priv->provdisc_req_issued = _FALSE;
-						#if defined(CONFIG_CONCURRENT_MODE) && defined(CONFIG_CFG80211_ONECHANNEL_UNDER_CONCURRENT)
+						#ifdef CONFIG_CONCURRENT_MODE
 						if(check_buddy_fwstate(padapter, _FW_LINKED)
 							&& rtw_chk_p2pie_ch_list_with_buddy(padapter, frame_body, len-sizeof(struct rtw_ieee80211_hdr_3addr)) == _FALSE)
 						{
@@ -4175,7 +4150,7 @@ int rtw_p2p_check_frames(_adapter *padapter, const u8 *buf, u32 len, u8 tx)
 					bool is_go = _FALSE;
 
 					if (tx) {
-						#if defined(CONFIG_CONCURRENT_MODE) && defined(CONFIG_CFG80211_ONECHANNEL_UNDER_CONCURRENT)
+						#ifdef CONFIG_CONCURRENT_MODE
 						if(check_buddy_fwstate(padapter, _FW_LINKED))
 							rtw_cfg80211_adjust_p2pie_channel(padapter, frame_body, len-sizeof(struct rtw_ieee80211_hdr_3addr));
 						#endif
@@ -4194,7 +4169,7 @@ int rtw_p2p_check_frames(_adapter *padapter, const u8 *buf, u32 len, u8 tx)
 						nego_info->state = 2;
 
 						if (status == 0) {
-							if (rtw_p2p_nego_intent_compare(nego_info->req_intent, nego_info->rsp_intent) ^ !tx)
+							if (rtw_p2p_nego_intent_compare(nego_info->req_intent, nego_info->rsp_intent) && tx)
 								is_go = _TRUE;
 						}
 
@@ -4216,7 +4191,7 @@ int rtw_p2p_check_frames(_adapter *padapter, const u8 *buf, u32 len, u8 tx)
 					int flags = -1;
 
 					if (tx) {
-						#if defined(CONFIG_CONCURRENT_MODE) && defined(CONFIG_CFG80211_ONECHANNEL_UNDER_CONCURRENT)
+						#ifdef CONFIG_CONCURRENT_MODE
 						if(check_buddy_fwstate(padapter, _FW_LINKED))
 							rtw_cfg80211_adjust_p2pie_channel(padapter, frame_body, len-sizeof(struct rtw_ieee80211_hdr_3addr));
 						#endif
@@ -4241,9 +4216,10 @@ int rtw_p2p_check_frames(_adapter *padapter, const u8 *buf, u32 len, u8 tx)
 					DBG_871X("RTW_%s:P2P_INVIT_REQ, dialogToken=%d, flags:0x%02x, op_ch:%d, ch_list:%s\n",
 							(tx==_TRUE)?"Tx":"Rx", dialogToken, flags, op_ch, ch_list_buf);
 
-					if (!tx) {
-						#if defined(CONFIG_CONCURRENT_MODE) && defined(CONFIG_CFG80211_ONECHANNEL_UNDER_CONCURRENT)
-						if(check_buddy_fwstate(padapter, _FW_LINKED)) {
+					if (!tx && padapter->cfg80211_wdinfo.chk_invite_ch_list == _TRUE) {
+						#ifdef CONFIG_CONCURRENT_MODE
+						if(check_buddy_fwstate(padapter, _FW_LINKED))
+						{
 							if (op_ch != -1 && rtw_chk_p2pie_op_ch_with_buddy(padapter, frame_body, len-sizeof(struct rtw_ieee80211_hdr_3addr)) == _FALSE) {
 								DBG_871X(FUNC_ADPT_FMT" op_ch:%u has no intersect with buddy\n", FUNC_ADPT_ARG(padapter), op_ch);
 								rtw_change_p2pie_ch_list(padapter, frame_body, len-sizeof(struct rtw_ieee80211_hdr_3addr), 0);
@@ -4262,7 +4238,7 @@ int rtw_p2p_check_frames(_adapter *padapter, const u8 *buf, u32 len, u8 tx)
 					struct rtw_wdev_invit_info* invit_info = &pwdev_priv->invit_info;
 
 					if (tx) {
-						#if defined(CONFIG_CONCURRENT_MODE) && defined(CONFIG_CFG80211_ONECHANNEL_UNDER_CONCURRENT)
+						#ifdef CONFIG_CONCURRENT_MODE
 						if(check_buddy_fwstate(padapter, _FW_LINKED))
 							rtw_cfg80211_adjust_p2pie_channel(padapter, frame_body, len-sizeof(struct rtw_ieee80211_hdr_3addr));
 						#endif
@@ -4395,7 +4371,11 @@ void rtw_init_cfg80211_wifidirect_info( _adapter*	padapter)
 	struct cfg80211_wifidirect_info *pcfg80211_wdinfo = &padapter->cfg80211_wdinfo;
 
 	_rtw_memset(pcfg80211_wdinfo, 0x00, sizeof(struct cfg80211_wifidirect_info) );
-    
+#ifdef CONFIG_P2P_CHK_INVITE_CH_LIST
+	pcfg80211_wdinfo->chk_invite_ch_list = _TRUE;
+#else
+	pcfg80211_wdinfo->chk_invite_ch_list = _FALSE;
+#endif //CONFIG_P2P_CHK_INVITE_CH_LIST
 	_init_timer( &pcfg80211_wdinfo->remain_on_ch_timer, padapter->pnetdev, ro_ch_timer_process, padapter );
 }
 #endif //CONFIG_IOCTL_CFG80211	
@@ -4852,7 +4832,7 @@ void reset_global_wifidirect_info( _adapter* padapter )
 	pwdinfo->persistent_supported = 0;
 	pwdinfo->session_available = _TRUE;
 	pwdinfo->wfd_tdls_enable = 0;
-	pwdinfo->wfd_tdls_weaksec = _TRUE;
+	pwdinfo->wfd_tdls_weaksec = 0;
 }
 
 #ifdef CONFIG_WFD

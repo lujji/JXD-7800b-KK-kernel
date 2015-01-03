@@ -21,7 +21,6 @@
 
 #include <drv_types.h>
 #include <platform_ops.h>
-#include "wifi_version.h"
 
 #ifndef CONFIG_SDIO_HCI
 #error "CONFIG_SDIO_HCI shall be on!\n"
@@ -295,7 +294,16 @@ _func_enter_;
 		goto exit;
 	}
 
+
+#ifdef CONFIG_WOWLAN
+	sdio_claim_host(func);
 	sdio_set_drvdata(func, dvobj);
+	mmc_host = func->card->host;
+   	sdio_set_host_pm_flags(func, MMC_PM_KEEP_POWER);
+	sdio_release_host(func);
+#else
+	sdio_set_drvdata(func, dvobj);
+#endif
 
 	psdio = &dvobj->intf_data;
 	psdio->func = func;
@@ -536,7 +544,7 @@ free_adapter:
 	if (status != _SUCCESS) {
 		if (pnetdev)
 			rtw_free_netdev(pnetdev);
-		else
+		else if (padapter)
 			rtw_vmfree((u8*)padapter, sizeof(*padapter));
 		padapter = NULL;
 	}
@@ -767,17 +775,9 @@ static int rtw_sdio_suspend(struct device *dev)
 	int ret = 0;
 	u8 ch, bw, offset;
 
-	if (pwrpriv->bInSuspend == _TRUE)
-	{
-		DBG_871X("%s bInSuspend = %d\n", __FUNCTION__, pwrpriv->bInSuspend);
-		pdbgpriv->dbg_suspend_error_cnt++;
-		goto exit;
-	}
-
 	ret = rtw_suspend_common(padapter);		
 
-exit:
-#ifdef CONFIG_RTW_SDIO_PM_KEEP_POWER 
+#if (defined CONFIG_MMC_PM_KEEP_POWER) 
 	//Android 4.0 don't support WIFI close power
 	//or power down or clock will close after wifi resume,
 	//this is sprd's bug in Android 4.0, but sprd don't
@@ -801,17 +801,6 @@ exit:
 }
 int rtw_resume_process(_adapter *padapter)
 {
-	struct pwrctrl_priv *pwrpriv = adapter_to_pwrctl(padapter);
-	struct dvobj_priv *psdpriv = padapter->dvobj;
-	struct debug_priv *pdbgpriv = &psdpriv->drv_dbg;
-	
-	if (pwrpriv->bInSuspend == _FALSE)
-	{
-		pdbgpriv->dbg_resume_error_cnt++;
-		DBG_871X("%s bInSuspend = %d\n", __FUNCTION__, pwrpriv->bInSuspend);
-		return -1;
-	}
-	
 	return rtw_resume_common(padapter);
 }
 
@@ -845,14 +834,6 @@ static int rtw_sdio_suspend(struct device *dev)
 	DBG_871X_LEVEL(_drv_always_, "sdio suspend start\n");
 	DBG_871X("==> %s (%s:%d)\n",__FUNCTION__, current->comm, current->pid);
 	pdbgpriv->dbg_suspend_cnt++;
-	
-	if (pwrpriv->bInSuspend == _TRUE)
-	{
-		DBG_871X("%s bInSuspend = %d\n", __FUNCTION__, pwrpriv->bInSuspend);
-		pdbgpriv->dbg_suspend_error_cnt++;
-		goto exit;
-	}
-	
 	pwrpriv->bInSuspend = _TRUE;
 #ifdef CONFIG_PNO_SUPPORT
 	pwrpriv->pno_in_resume = _FALSE;
@@ -1004,7 +985,7 @@ static int rtw_sdio_suspend(struct device *dev)
 		}
 		
 		if (rtw_get_ch_setting_union(padapter, &ch, &bw, &offset) != 0) {
-			DBG_871X(FUNC_ADPT_FMT" back to linked/linking union - ch:%u, bw:%u, offset:%u\n",
+			DBG_871X(FUNC_ADPT_FMT" back to linked union - ch:%u, bw:%u, offset:%u\n",
 				FUNC_ADPT_ARG(padapter), ch, bw, offset);
 			set_channel_bwmode(padapter, ch, offset, bw);
 		}
@@ -1059,7 +1040,8 @@ static int rtw_sdio_suspend(struct device *dev)
 
 exit:
 
-#ifdef CONFIG_RTW_SDIO_PM_KEEP_POWER  
+//#if (defined CONFIG_WOWLAN) || (!(defined ANDROID_2X) && (defined CONFIG_PLATFORM_SPRD))
+#if (defined CONFIG_WOWLAN) 
 	//Android 4.0 don't support WIFI close power
 	//or power down or clock will close after wifi resume,
 	//this is sprd's bug in Android 4.0, but sprd don't
@@ -1078,7 +1060,7 @@ exit:
 			sdio_set_host_pm_flags(func, MMC_PM_KEEP_POWER);
 		}
 	}
-#endif
+#endif		
 
 	DBG_871X("<===  %s return %d.............. in %dms\n", __FUNCTION__
 		, ret, rtw_get_passing_time_ms(start_time));
@@ -1116,14 +1098,6 @@ int rtw_resume_process(_adapter *padapter)
 	} else {
 		pdbgpriv->dbg_resume_error_cnt++;
 		ret = -1;
-		goto exit;
-	}
-	
-	if (pwrpriv->bInSuspend == _FALSE)
-	{
-		ret = -1;
-		pdbgpriv->dbg_resume_error_cnt++;
-		DBG_871X("%s bInSuspend = %d\n", __FUNCTION__, pwrpriv->bInSuspend);
 		goto exit;
 	}
 
@@ -1374,16 +1348,17 @@ static int rtw_sdio_resume(struct device *dev)
 
 }
 
-static int /*__init*/ rtw_drv_entry(void)
+static int rtw_drv_entry(void)
 {
 	int ret = 0;
 
 
 	DBG_871X_LEVEL(_drv_always_, "module init start\n");
-	dump_drv_version(RTW_DBGDUMP);
+	DBG_871X_LEVEL(_drv_always_, DRV_NAME" driver version = %s\n", DRIVERVERSION);
 #ifdef BTCOEXVERSION
 	DBG_871X_LEVEL(_drv_always_, DRV_NAME" BT-Coex version = %s\n", BTCOEXVERSION);
 #endif // BTCOEXVERSION
+	DBG_871X_LEVEL(_drv_always_, "build time: %s %s\n", __DATE__, __TIME__);
 
 	ret = platform_wifi_power_on();
 	if (ret)
@@ -1421,7 +1396,7 @@ exit:
 	return ret;
 }
 
-static void /*__exit*/ rtw_drv_halt(void)
+static void rtw_drv_halt(void)
 {
 	DBG_871X_LEVEL(_drv_always_, "module exit start\n");
 
@@ -1442,22 +1417,27 @@ static void /*__exit*/ rtw_drv_halt(void)
 	rtw_mstat_dump(RTW_DBGDUMP);
 }
 
+#include "wifi_version.h"
+
 int rockchip_wifi_init_module(void)
 {
+    printk("\n");
     printk("=======================================================\n");
     printk("==== Launching Wi-Fi driver! (Powered by Rockchip) ====\n");
     printk("=======================================================\n");
-    printk("Realtek 8723BS SDIO WiFi driver (Powered by Rockchip,Ver %s) init.\n", RTL8723BS_DRV_VERSION);
+    printk("Realtek 8723BS SDIO WiFi driver (Powered by Rockchip,Ver %s) init.\n", RTL8192_DRV_VERSION);
 
     return rtw_drv_entry();
 }
 
 void rockchip_wifi_exit_module(void)
 {
+    printk("\n");
     printk("=======================================================\n");
     printk("==== Dislaunching Wi-Fi driver! (Powered by Rockchip) ====\n");
     printk("=======================================================\n");
-    
+    printk("Realtek 8723BS SDIO WiFi driver (Powered by Rockchip,Ver %s) init.\n", RTL8192_DRV_VERSION);
+
     rtw_drv_halt();
 }
 

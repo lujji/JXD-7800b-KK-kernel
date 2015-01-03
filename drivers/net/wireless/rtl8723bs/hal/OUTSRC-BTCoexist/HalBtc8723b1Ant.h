@@ -136,8 +136,6 @@ typedef struct _COEX_STA_8723B_1ANT{
 	BOOLEAN					bC2hBtInquiryPage;
 	u1Byte					btRetryCnt;
 	u1Byte					btInfoExt;
-	BOOLEAN					bWiFiIsHighPriTask;
-	BOOLEAN					bC2hBtPage;
 }COEX_STA_8723B_1ANT, *PCOEX_STA_8723B_1ANT;
 
 //===========================================

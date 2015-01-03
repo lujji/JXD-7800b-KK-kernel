@@ -370,7 +370,6 @@ struct mp_priv
 	//Tx Section
 	u8 TID;
 	u32 tx_pktcount;
-	u32 pktInterval;
 	struct mp_tx tx;
 
 	//Rx Section

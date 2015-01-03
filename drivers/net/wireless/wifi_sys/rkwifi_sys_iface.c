@@ -132,11 +132,6 @@ static ssize_t wifi_chip_read(struct class *cls, char *_buf)
 #endif
 #endif
 
-#ifdef CONFIG_AP6234
-    count = sprintf(_buf, "%s", "AP6234");
-    printk("Current WiFi chip is AP6234.\n");
-#endif
-
 #ifdef CONFIG_AP6330
 #ifdef CONFIG_BCM_OOB_ENABLED
     count = sprintf(_buf, "%s", "OOB_RK903");
@@ -145,16 +140,6 @@ static ssize_t wifi_chip_read(struct class *cls, char *_buf)
     count = sprintf(_buf, "%s", "RK903");
     printk("Current WiFi chip is AP6330.\n");
 #endif
-#endif
-
-#ifdef CONFIG_AP6335
-    count = sprintf(_buf, "%s", "AP6335");
-    printk("Current WiFi chip is AP6335.\n");
-#endif
-
-#ifdef CONFIG_AP6441
-    count = sprintf(_buf, "%s", "AP6441");
-    printk("Current WiFi chip is AP6441.\n");
 #endif
 
 #ifdef CONFIG_AP6476
@@ -451,7 +436,7 @@ static int wifi_driver_insmod = 0;
 static ssize_t wifi_driver_write(struct class *cls, struct class_attribute *attr, const char *_buf, size_t _count)
 {
     int enable = 0, ret = 0;
-#ifndef CONFIG_MTK_COMBO_MT66XX
+
     down(&driver_sem);
     enable = simple_strtol(_buf, NULL, 10);
     //printk("%s: enable = %d\n", __func__, enable);
@@ -470,7 +455,6 @@ static ssize_t wifi_driver_write(struct class *cls, struct class_attribute *attr
     }
 
     up(&driver_sem);
-#endif	
     //printk("%s: ret = %d\n", __func__, ret);
     return _count;
 }
@@ -482,8 +466,8 @@ static CLASS_ATTR(pcba, 0664, wifi_pcba_read, wifi_pcba_write);
 #ifdef CONFIG_AIDC
 static CLASS_ATTR(aidc, 0664, wifi_aidc_read, NULL);
 #endif
-static CLASS_ATTR(power, 0660, NULL, wifi_power_write);
-static CLASS_ATTR(driver, 0660, NULL, wifi_driver_write);
+static CLASS_ATTR(power, 0222, NULL, wifi_power_write);
+static CLASS_ATTR(driver, 0222, NULL, wifi_driver_write);
 
 int rkwifi_sysif_init(void)
 {
