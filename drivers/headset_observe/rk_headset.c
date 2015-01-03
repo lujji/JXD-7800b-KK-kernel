@@ -202,7 +202,7 @@ static void headsetobserve_work(struct work_struct *work)
 			irq_set_irq_type(headset_info->irq[HEADSET],IRQF_TRIGGER_RISING);
 		if (pdata->Hook_gpio != INVALID_GPIO) {
 			del_timer(&headset_info->headset_timer);//Start the timer, wait for switch to the headphone channel
-			headset_info->headset_timer.expires = jiffies + 10;
+			headset_info->headset_timer.expires = jiffies + 50;
 			add_timer(&headset_info->headset_timer);
 			goto out;
 		}
