@@ -2883,6 +2883,8 @@ static struct cpufreq_frequency_table dvfs_arm_table_volt_level0[] = {
 	{.frequency = 1200 * 1000,      .index = 1100 * 1000},
 	{.frequency = 1416 * 1000,      .index = 1200 * 1000},
 	{.frequency = 1608 * 1000,      .index = 1300 * 1000},
+	{.frequency = 1704 * 1000,		.index = 1325 * 1000},
+	{.frequency = 1800 * 1000,      .index = 1350 * 1000},	
 	{.frequency = CPUFREQ_TABLE_END},
 };
 //default
@@ -2947,8 +2949,13 @@ static struct cpufreq_frequency_table dvfs_ddr_table_t[] = {
 };
 
 //if you board is good for volt quality,select dvfs_arm_table_volt_level0
+#if defined (CONFIG_DVFS_OVERCLOCK)
+#define dvfs_arm_table dvfs_arm_table_volt_level0
+#define dvfs_gpu_table dvfs_gpu_table_volt_level0
+#else
 #define dvfs_arm_table dvfs_arm_table_volt_level1
 #define dvfs_gpu_table dvfs_gpu_table_volt_level1
+#endif
 #define dvfs_ddr_table dvfs_ddr_table_volt_level0
 
 #else

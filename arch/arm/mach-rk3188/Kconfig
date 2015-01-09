@@ -37,3 +37,21 @@ config MACH_RK3188_FAC
         select MACH_RK_FAC
 
 endchoice
+
+choice
+	prompt "DVFS frequency table"
+	depends on MACH_RK3188_TB
+
+config DVFS_DEFAULT
+	bool "Default"
+	help
+	  Default level1 table for CPU and GPU. 1608 MHz unlocked for all processors.
+
+config DVFS_OVERCLOCK
+	bool "Overclock"
+	help
+	  Level0 dvfs table for CPU and GPU.
+	  Maximum CPU frequency is 1704 MHz (RK3188-T) or 1800 MHz (RK3188).
+	  Might be unstable.
+
+endchoice
