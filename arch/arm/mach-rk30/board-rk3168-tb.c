@@ -1332,14 +1332,54 @@ struct rk29_sdmmc_platform_data default_sdmmc2_data = {
  * the end of setting for SDMMC devices
 **************************************************************************************************/
 
-#ifdef CONFIG_BATTERY_RK30_ADC
+#ifdef CONFIG_BATTERY_RK30_ADC 
+#define DC_DET_PIN RK30_PIN0_PB2
+#define CHARAGE_OK_PIN 	RK30_PIN0_PA6
+#define BATT_NUM  11
+
+
+static int batt_table[2*BATT_NUM+6] =
+{
+	0x4B434F52,0x7461625F,0x79726574,0,100,100,
+
+	3490,3574,3627,3657,3686,3715,3764,3833,3896,3964,4056,
+	3598,3710,3764,3823,3852,3876,3911,3959,4042,4106,4140,
+};
+
+static int rk_adc_io_init(void){
+	int ret = 0;
+
+	ret = gpio_request(DC_DET_PIN,"dc_det_pin");
+	if(ret <0){
+		printk("request dec detect pin error");
+		return -EINVAL;
+	}else{
+		gpio_direction_input(DC_DET_PIN);
+		gpio_pull_updown(DC_DET_PIN,1);		
+	}
+
+	ret = gpio_request(CHARAGE_OK_PIN,"charage_ok_pin");
+	if(ret <0){
+		printk("request charage pin error");
+		return -EINVAL;
+	}else{
+		gpio_direction_input(CHARAGE_OK_PIN);
+		gpio_pull_updown(CHARAGE_OK_PIN,0);
+	}
+
+	return 0;	
+}
+
 static struct rk30_adc_battery_platform_data rk30_adc_battery_platdata = {
         .dc_det_pin      = RK30_PIN0_PB2,
-        .batt_low_pin    = RK30_PIN0_PB1, 
+        .batt_low_pin    = INVALID_GPIO, 
         .charge_set_pin  = INVALID_GPIO,
         .charge_ok_pin   = RK30_PIN0_PA6,
         .dc_det_level    = GPIO_LOW,
         .charge_ok_level = GPIO_HIGH,
+        .io_init =	rk_adc_io_init,
+        .save_capacity = 1,
+        .board_batt_table = batt_table,
 };
 
 static struct platform_device rk30_device_adc_battery = {
