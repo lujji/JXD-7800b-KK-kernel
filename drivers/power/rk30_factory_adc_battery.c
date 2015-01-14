@@ -98,14 +98,21 @@ char gDischargeFlag[4] = {"on "};
 
 #ifdef CONFIG_BATTERY_RK30_VOL3V8
 #define BATT_MAX_VOL_VALUE                             4120               	//Full  charge volate	 
-#define BATT_ZERO_VOL_VALUE                            3500//3500              	//power down voltage
+#define BATT_ZERO_VOL_VALUE                            3400//3500              	//power down voltage
 #define BATT_NOMAL_VOL_VALUE                         3800            
 
+// static int batt_table[2*BATT_NUM+6] =
+// {
+// 	0x4B434F52,0x7461625F,0x79726574,0,200,120,
+// 	3504, 3585, 3655, 3681, 3697, 3730, 3764, 3838, 3903, 3993, 4100,  //discharge
+// 	3689, 3891, 3937, 3970, 4000, 4050, 4120, 4146, 4155, 4160, 4165	//charge 
+// };
 static int batt_table[2*BATT_NUM+6] =
 {
-	0x4B434F52,0x7461625F,0x79726574,0,200,120,
-	3504, 3585, 3655, 3681, 3697, 3730, 3764, 3838, 3903, 3993, 4100,  //discharge
-	3689, 3891, 3937, 3970, 4000, 4050, 4120, 4146, 4155, 4160, 4165	//charge 
+	0x4B434F52,0x7461625F,0x79726574,0,100,100,
+
+	3490,3574,3627,3657,3686,3715,3764,3833,3896,3964,4056,
+	3598,3710,3764,3823,3852,3876,3911,3959,4042,4106,4140,
 };
 #define adc_to_voltage(adc_val) ((adc_val * BAT_DEFINE_VALUE * (batt_table[4] +batt_table[5])) / (1024 *batt_table[5]))
 #else
