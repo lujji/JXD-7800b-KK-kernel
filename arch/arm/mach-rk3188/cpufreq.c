@@ -491,7 +491,11 @@ static int rk3188_cpufreq_init_cpu0(struct cpufreq_policy *policy)
 	}
 	low_battery_freq = get_freq_from_table(low_battery_freq);
 	clk_enable_dvfs(cpu_clk);
+#ifdef CONFIG_DVFS_OVERCLOCK
 	if(rk_tflag()){
+#else
+	if(0){
+#endif
 #define RK3188_T_LIMIT_FREQ	(1704 * 1000)
 		dvfs_clk_enable_limit(cpu_clk, 0, RK3188_T_LIMIT_FREQ * 1000);
 		for (i = 0; freq_table[i].frequency != CPUFREQ_TABLE_END; i++) {
