@@ -449,7 +449,7 @@ static int rk3188_cpufreq_verify(struct cpufreq_policy *policy)
 
 static int rk3188_cpufreq_init_cpu0(struct cpufreq_policy *policy)
 {
-	unsigned int i;
+	unsigned int i, j;
 	struct cpufreq_frequency_table *table_adjust;
 
 	gpu_is_mali400 = cpu_is_rk3188();
@@ -491,12 +491,13 @@ static int rk3188_cpufreq_init_cpu0(struct cpufreq_policy *policy)
 	}
 	low_battery_freq = get_freq_from_table(low_battery_freq);
 	clk_enable_dvfs(cpu_clk);
-#ifdef CONFIG_DVFS_OVERCLOCK
+
 	if(rk_tflag()){
-#else
-	if(0){
-#endif
+#ifdef CONFIG_DVFS_OVERCLOCK
 #define RK3188_T_LIMIT_FREQ	(1704 * 1000)
+#else
+#define RK3188_T_LIMIT_FREQ	(1608 * 1000)
+#endif
 		dvfs_clk_enable_limit(cpu_clk, 0, RK3188_T_LIMIT_FREQ * 1000);
 		for (i = 0; freq_table[i].frequency != CPUFREQ_TABLE_END; i++) {
 			if (freq_table[i].frequency > RK3188_T_LIMIT_FREQ) {
@@ -504,7 +505,22 @@ static int rk3188_cpufreq_init_cpu0(struct cpufreq_policy *policy)
 				freq_table[i].frequency = CPUFREQ_TABLE_END;
 			}
 		}
-	}
+		/* remove duplicate gpu frequency for T-models */
+		table_adjust = dvfs_get_freq_volt_table(gpu_clk);
+		if (table_adjust == NULL) {
+			printk("cpufreq: gpu table not found!");
+		} else {
+			for (i = 0; table_adjust[i].frequency != CPUFREQ_TABLE_END; i++) {
+				if (table_adjust[i].frequency == table_adjust[i + 1].frequency) {
+					printk("cpufreq: delete gpu freq(%u)\n", table_adjust[i].frequency);
+					for (j = i + 1; table_adjust[j].frequency != CPUFREQ_TABLE_END; j++) {
+						table_adjust[j] = table_adjust[j + 1];
+					}
+					break;
+				}
+			}
+		}
+ 	}
 	freq_wq = alloc_workqueue("rk3188_cpufreqd", WQ_NON_REENTRANT | WQ_MEM_RECLAIM | WQ_HIGHPRI | WQ_FREEZABLE, 1);
 	rk3188_cpufreq_temp_limit_init(policy);
 #ifdef CPU_FREQ_DVFS_TST
