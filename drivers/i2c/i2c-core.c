@@ -1542,15 +1542,19 @@ int i2c_transfer(struct i2c_adapter *adap, struct i2c_msg *msgs, int num)
 #ifdef CONFIG_I2C_DEV_RK29
 	i2c_dev_dump_start(adap, msgs, num);
 #endif
-		for (ret = 0, try = 0; try <= adap->retries; try++) {
-			ret = adap->algo->master_xfer(adap, msgs, num);
-			if (ret != -EAGAIN)
-				break;
-		        dev_err(&adap->dev, "No ack, Maybe slave(addr: 0x%x) not exist or abnormal power-on, retry %d...\n", 
-                                        msgs[0].addr, adap->retries - try);
-			if (time_after(jiffies, orig_jiffies + adap->timeout))
-				break;
-		}
+		/* ignore 0x46 errors */
+		
+			for (ret = 0, try = 0; try <= adap->retries; try++) {
+				ret = adap->algo->master_xfer(adap, msgs, num);
+				if (ret != -EAGAIN)
+					break;
+				if (msgs[0].addr != 0x46){
+			        dev_err(&adap->dev, "No ack, Maybe slave(addr: 0x%x) not exist or abnormal power-on, retry %d...\n", 
+	                                        msgs[0].addr, adap->retries - try);
+			        }
+				if (time_after(jiffies, orig_jiffies + adap->timeout))
+					break;				
+			}
 #ifdef CONFIG_I2C_DEV_RK29
 	i2c_dev_dump_stop(adap, msgs, num ,ret);
 #endif

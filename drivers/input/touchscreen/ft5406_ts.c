@@ -717,7 +717,6 @@ static void detect_ts_work(struct work_struct * work)
     struct ft5406_platform_data *pdata = data->client->dev.platform_data;
     if (pdata->platform_wakeup)                              
         pdata->platform_wakeup();
-    printk("hhhhhhhhhhhhh\n");
     schedule_delayed_work(&data->detect_work,msecs_to_jiffies(20000));
     return;
 
